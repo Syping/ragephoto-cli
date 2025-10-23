@@ -5,30 +5,9 @@ using System.Text;
 internal static class Program {
 
     private static void Main(String[] args) {
-
-        Argument<FileInfo> photoArgument = new("photo") {
-            Description = "Photo File"
-        };
-        Argument<String> dataTypeArgument = new("dataType") {
-            Description = "Data Type",
-            DefaultValueFactory = _ => "jpeg"
-        };
-        Option<String> outputOption = new("output", "o") {
-            Description = "Output",
-            DefaultValueFactory = _ => "-"
-        };
-        Command getCommand = new("get", "Get Photo Data") {
-            photoArgument, dataTypeArgument, outputOption
-        };
-        getCommand.SetAction(result => Get(
-            result.GetRequiredValue(photoArgument),
-            result.GetRequiredValue(dataTypeArgument),
-            result.GetRequiredValue(outputOption)));
-
         RootCommand rootCommand = new("ragephoto-cli Application") {
-            getCommand
+            GetCommand, SetCommand
         };
-
         rootCommand.Parse(args).Invoke();
     }
 
@@ -64,7 +43,7 @@ internal static class Program {
                     break;
             }
 
-            Stream output = outputFile == "-" ? Console.OpenStandardOutput() : File.Create(outputFile);
+            using Stream output = outputFile == "-" ? Console.OpenStandardOutput() : File.Create(outputFile);
             output.Write(content);
         }
         catch (RagePhotoException exception) {
@@ -74,6 +53,114 @@ internal static class Program {
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
             Environment.Exit(-1);
+        }
+    }
+
+    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? json, String? title, FileInfo? outputFile) {
+        if (string.IsNullOrEmpty(format) && string.IsNullOrEmpty(jpegFile) &&
+            json == null && title == null) {
+            Console.Error.WriteLine("No value has being set");
+            Environment.Exit(1);
+        }
+
+        try {
+            using Photo photo = new();
+            photo.LoadFile(photoFile.FullName);
+
+            if (!string.IsNullOrEmpty(format)) {
+                photo.Format = format.ToLowerInvariant() switch {
+                    "gta5" => PhotoFormat.GTA5,
+                    "rdr2" => PhotoFormat.RDR2,
+                    _ => throw new ArgumentException("Invalid format", nameof(format))
+                };
+            }
+
+            if (json != null) 
+                photo.Json = json;
+
+            if (title != null)
+                photo.Title = title;
+
+            if (!string.IsNullOrEmpty(jpegFile)) {
+                using MemoryStream jpegStream = new();
+                using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
+                input.CopyTo(jpegStream);
+                photo.Jpeg = jpegStream.ToArray();
+            }
+
+            String tempFile = Path.GetTempFileName();
+            photo.SaveFile(tempFile);
+            File.Move(tempFile, outputFile != null ? outputFile.FullName : photoFile.FullName);
+        }
+        catch (RagePhotoException exception) {
+            Console.Error.WriteLine(exception.Message);
+            Environment.Exit(exception.Photo != null ? (Int32)exception.Error + 2 : -1);
+        }
+        catch (ArgumentException exception) {
+            Console.Error.WriteLine(exception.Message);
+            Environment.Exit(1);
+        }
+        catch (Exception exception) {
+            Console.Error.WriteLine(exception.Message);
+            Environment.Exit(-1);
+        }
+    }
+
+    private static Command GetCommand {
+        get {
+            Argument<FileInfo> photoArgument = new("photo") {
+                Description = "Photo File"
+            };
+            Argument<String> dataTypeArgument = new("dataType") {
+                Description = "Data Type",
+                DefaultValueFactory = _ => "jpeg"
+            };
+            Option<String> outputOption = new("output", "o") {
+                Description = "Output File",
+                DefaultValueFactory = _ => "-"
+            };
+            Command getCommand = new("get", "Get Photo Data") {
+                photoArgument, dataTypeArgument, outputOption
+            };
+            getCommand.SetAction(result => Get(
+                result.GetRequiredValue(photoArgument),
+                result.GetRequiredValue(dataTypeArgument),
+                result.GetRequiredValue(outputOption)));
+            return getCommand;
+        }
+    }
+
+    private static Command SetCommand {
+        get {
+            Argument<FileInfo> photoArgument = new("photo") {
+                Description = "Photo File"
+            };
+            Option<String?> formatOption = new("format", "f") {
+                Description = "Photo Format"
+            };
+            Option<String?> jpegOption = new("jpeg") {
+                Description = "JPEG File"
+            };
+            Option<String?> jsonOption = new("json") {
+                Description = "Photo JSON"
+            };
+            Option<String?> titleOption = new("title", "t") {
+                Description = "Photo Title"
+            };
+            Option<FileInfo?> outputOption = new("output", "o") {
+                Description = "Output File"
+            };
+            Command setCommand = new("set", "Set Photo Data") {
+                photoArgument, formatOption, jpegOption, jsonOption, titleOption, outputOption
+            };
+            setCommand.SetAction(result => Set(
+                result.GetRequiredValue(photoArgument),
+                result.GetValue(formatOption),
+                result.GetValue(jpegOption),
+                result.GetValue(jsonOption),
+                result.GetValue(titleOption),
+                result.GetValue(outputOption)));
+            return setCommand;
         }
     }
 }
