@@ -115,7 +115,7 @@ internal static class Program {
                 Description = "Data Type",
                 DefaultValueFactory = _ => "jpeg"
             };
-            Option<String> outputOption = new("output", "o") {
+            Option<String> outputOption = new("--output", "-o") {
                 Description = "Output File",
                 DefaultValueFactory = _ => "-"
             };
@@ -135,19 +135,19 @@ internal static class Program {
             Argument<FileInfo> photoArgument = new("photo") {
                 Description = "Photo File"
             };
-            Option<String?> formatOption = new("format", "f") {
+            Option<String?> formatOption = new("--format", "-f") {
                 Description = "Photo Format"
             };
-            Option<String?> jpegOption = new("jpeg") {
+            Option<String?> jpegOption = new("--jpeg") {
                 Description = "JPEG File"
             };
-            Option<String?> jsonOption = new("json") {
+            Option<String?> jsonOption = new("--json") {
                 Description = "Photo JSON"
             };
-            Option<String?> titleOption = new("title", "t") {
+            Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
-            Option<FileInfo?> outputOption = new("output", "o") {
+            Option<FileInfo?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
             Command setCommand = new("set", "Set Photo Data") {
