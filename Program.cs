@@ -90,7 +90,7 @@ internal static class Program {
 
             String tempFile = Path.GetTempFileName();
             photo.SaveFile(tempFile);
-            File.Move(tempFile, outputFile != null ? outputFile.FullName : photoFile.FullName);
+            File.Move(tempFile, outputFile != null ? outputFile.FullName : photoFile.FullName, true);
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
