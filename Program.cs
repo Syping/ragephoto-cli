@@ -18,6 +18,9 @@ internal static class Program {
 
             Byte[] content = [];
             switch (dataType.ToLowerInvariant()) {
+                case "description":
+                    content = Encoding.UTF8.GetBytes(photo.Description);
+                    break;
                 case "format":
                     content = Encoding.UTF8.GetBytes(photo.Format switch {
                         PhotoFormat.GTA5 => "gta5",
@@ -56,9 +59,9 @@ internal static class Program {
         }
     }
 
-    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? json, String? title, FileInfo? outputFile) {
-        if (String.IsNullOrEmpty(format) && String.IsNullOrEmpty(jpegFile) &&
-            json == null && title == null) {
+    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, FileInfo? outputFile) {
+        if (format == null && jpegFile == null &&
+            description == null && json == null && title == null) {
             Console.Error.WriteLine("No value has being set");
             Environment.Exit(1);
         }
@@ -67,7 +70,7 @@ internal static class Program {
             using Photo photo = new();
             photo.LoadFile(photoFile.FullName);
 
-            if (!String.IsNullOrEmpty(format)) {
+            if (format != null) {
                 photo.Format = format.ToLowerInvariant() switch {
                     "gta5" => PhotoFormat.GTA5,
                     "rdr2" => PhotoFormat.RDR2,
@@ -75,13 +78,19 @@ internal static class Program {
                 };
             }
 
+            if (description != null)
+                photo.Description = description;
+
             if (json != null) 
                 photo.Json = json;
 
             if (title != null)
                 photo.Title = title;
 
-            if (!String.IsNullOrEmpty(jpegFile)) {
+            if (jpegFile == string.Empty) {
+                photo.Jpeg = new Byte[1];
+            }
+            else if (jpegFile != null) {
                 using MemoryStream jpegStream = new();
                 using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
                 input.CopyTo(jpegStream);
@@ -138,10 +147,13 @@ internal static class Program {
             Option<String?> formatOption = new("--format", "-f") {
                 Description = "Photo Format"
             };
-            Option<String?> jpegOption = new("--jpeg") {
+            Option<String?> jpegOption = new("--jpeg", "--image", "-i") {
                 Description = "JPEG File"
             };
-            Option<String?> jsonOption = new("--json") {
+            Option<String?> descriptionOption = new("--description", "-d") {
+                Description = "Photo Description"
+            };
+            Option<String?> jsonOption = new("--json", "-j") {
                 Description = "Photo JSON"
             };
             Option<String?> titleOption = new("--title", "-t") {
@@ -151,12 +163,13 @@ internal static class Program {
                 Description = "Output File"
             };
             Command setCommand = new("set", "Set Photo Data") {
-                photoArgument, formatOption, jpegOption, jsonOption, titleOption, outputOption
+                photoArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
             };
             setCommand.SetAction(result => Set(
                 result.GetRequiredValue(photoArgument),
                 result.GetValue(formatOption),
                 result.GetValue(jpegOption),
+                result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
                 result.GetValue(outputOption)));
