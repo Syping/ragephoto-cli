@@ -28,6 +28,7 @@ internal static class Program {
                         _ => "unknown"
                     });
                     break;
+                case "image":
                 case "jpeg":
                     content = photo.Jpeg;
                     break;
