@@ -57,7 +57,7 @@ internal static class Program {
     }
 
     private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? json, String? title, FileInfo? outputFile) {
-        if (string.IsNullOrEmpty(format) && string.IsNullOrEmpty(jpegFile) &&
+        if (String.IsNullOrEmpty(format) && String.IsNullOrEmpty(jpegFile) &&
             json == null && title == null) {
             Console.Error.WriteLine("No value has being set");
             Environment.Exit(1);
@@ -67,7 +67,7 @@ internal static class Program {
             using Photo photo = new();
             photo.LoadFile(photoFile.FullName);
 
-            if (!string.IsNullOrEmpty(format)) {
+            if (!String.IsNullOrEmpty(format)) {
                 photo.Format = format.ToLowerInvariant() switch {
                     "gta5" => PhotoFormat.GTA5,
                     "rdr2" => PhotoFormat.RDR2,
@@ -81,7 +81,7 @@ internal static class Program {
             if (title != null)
                 photo.Title = title;
 
-            if (!string.IsNullOrEmpty(jpegFile)) {
+            if (!String.IsNullOrEmpty(jpegFile)) {
                 using MemoryStream jpegStream = new();
                 using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
                 input.CopyTo(jpegStream);
