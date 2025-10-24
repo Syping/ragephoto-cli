@@ -1,6 +1,6 @@
-﻿using RagePhoto;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Text;
+namespace RagePhoto.Cli;
 
 internal static class Program {
 
@@ -89,7 +89,7 @@ internal static class Program {
                 photo.Title = title;
 
             if (jpegFile == string.Empty) {
-                photo.Jpeg = new Byte[1];
+                photo.Jpeg = Properties.Resources.EmptyJpeg;
             }
             else if (jpegFile != null) {
                 using MemoryStream jpegStream = new();
