@@ -1,5 +1,5 @@
 ## ragephoto-cli
-Open Source Rage Photo CLI based on libragephoto
+Open Source RAGE Photo CLI based on libragephoto
 
 - Read/Write RAGE Photos with get/set commands
 - Support for stdin/stdout in JPEG option and output
