@@ -47,8 +47,19 @@ internal static class Program {
                     break;
             }
 
-            using Stream output = outputFile == "-" ? Console.OpenStandardOutput() : File.Create(outputFile);
-            output.Write(content);
+            if (outputFile == "-" || outputFile == String.Empty) {
+                using MemoryStream contentStream = new(content);
+                using Stream output = Console.OpenStandardOutput();
+                contentStream.CopyTo(output);
+            }
+            else {
+                String tempFile = Path.GetTempFileName();
+                using (MemoryStream contentStream = new(content)) {
+                    using FileStream output = File.Create(tempFile);
+                    contentStream.CopyTo(output);
+                }
+                File.Move(tempFile, outputFile, true);
+            }
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
@@ -60,7 +71,7 @@ internal static class Program {
         }
     }
 
-    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, FileInfo? outputFile) {
+    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
         if (format == null && jpegFile == null &&
             description == null && json == null && title == null) {
             Console.Error.WriteLine("No value has being set");
@@ -88,7 +99,7 @@ internal static class Program {
             if (title != null)
                 photo.Title = title;
 
-            if (jpegFile == string.Empty) {
+            if (jpegFile == String.Empty) {
                 photo.Jpeg = Properties.Resources.EmptyJpeg;
             }
             else if (jpegFile != null) {
@@ -98,9 +109,16 @@ internal static class Program {
                 photo.Jpeg = jpegStream.ToArray();
             }
 
-            String tempFile = Path.GetTempFileName();
-            photo.SaveFile(tempFile);
-            File.Move(tempFile, outputFile != null ? outputFile.FullName : photoFile.FullName, true);
+            if (outputFile == "-") {
+                using MemoryStream photoStream = new(photo.Save());
+                using Stream output = Console.OpenStandardOutput();
+                photoStream.CopyTo(output);
+            }
+            else {
+                String tempFile = Path.GetTempFileName();
+                photo.SaveFile(tempFile);
+                File.Move(tempFile, !String.IsNullOrEmpty(outputFile) ? outputFile : photoFile.FullName, true);
+            }
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
@@ -160,7 +178,7 @@ internal static class Program {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
-            Option<FileInfo?> outputOption = new("--output", "-o") {
+            Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
             Command setCommand = new("set", "Set Photo Data") {
