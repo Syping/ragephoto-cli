@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Completions;
 using System.Text;
 namespace RagePhoto.Cli;
 
