@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Completions;
 using System.Text;
 namespace RagePhoto.Cli;
 
@@ -149,6 +150,17 @@ internal static class Program {
                 Description = "Data Type",
                 DefaultValueFactory = _ => "jpeg"
             };
+            dataTypeArgument.CompletionSources.Add(_ => {
+                List<CompletionItem> dataTypes = [];
+                dataTypes.AddRange([
+                    new("description"),
+                    new("format"),
+                    new("jpeg"),
+                    new("json"),
+                    new("sign"),
+                    new("title")]);
+                return dataTypes;
+            });
             Option<String> outputOption = new("--output", "-o") {
                 Description = "Output File",
                 DefaultValueFactory = _ => "-"
