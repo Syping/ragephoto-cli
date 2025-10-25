@@ -18,9 +18,11 @@ internal static class Program {
 
             Byte[] content = [];
             switch (dataType.ToLowerInvariant()) {
+                case "d":
                 case "description":
                     content = Encoding.UTF8.GetBytes(photo.Description);
                     break;
+                case "f":
                 case "format":
                     content = Encoding.UTF8.GetBytes(photo.Format switch {
                         PhotoFormat.GTA5 => "gta5",
@@ -28,16 +30,20 @@ internal static class Program {
                         _ => "unknown"
                     });
                     break;
+                case "i":
                 case "image":
                 case "jpeg":
                     content = photo.Jpeg;
                     break;
+                case "j":
                 case "json":
                     content = Encoding.UTF8.GetBytes(photo.Json);
                     break;
+                case "s":
                 case "sign":
                     content = Encoding.UTF8.GetBytes($"{photo.Sign}");
                     break;
+                case "t":
                 case "title":
                     content = Encoding.UTF8.GetBytes(photo.Title);
                     break;
