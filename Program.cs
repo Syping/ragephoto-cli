@@ -31,10 +31,7 @@ internal static class Program {
                 photo.Jpeg = jpegStream.ToArray();
             }
 
-            Byte[] buffer = new Byte[4];
-            Random.Shared.NextBytes(buffer);
-            UInt32 photoUid = BitConverter.ToUInt32(buffer, 0);
-
+            Int32 photoUid = Random.Shared.Next(1, Int32.MaxValue);
             if (photo.Format == PhotoFormat.GTA5) {
                 DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399));
                 photo.SetHeader("PHOTO - 10/26/25 02:28:08", 798615001, 0);
