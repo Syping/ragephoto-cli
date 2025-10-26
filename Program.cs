@@ -241,8 +241,9 @@ internal static class Program {
             Argument<String> jpegArgument = new("jpeg") {
                 Description = "JPEG File",
             };
-            Argument<String> titleArgument = new("title") {
+            Argument<String?> titleArgument = new("title") {
                 Description = "Photo Title",
+                DefaultValueFactory = _ => null
             };
             Command createCommand = new("create", "Create Photo") {
                 photoArgument, formatArgument, jpegArgument, titleArgument
