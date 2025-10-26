@@ -6,7 +6,7 @@ internal static class Program {
 
     private static void Main(String[] args) {
         RootCommand rootCommand = new("ragephoto-cli Application") {
-            CreateCommand, GetCommand, SetCommand
+            GetCommand, SetCommand
         };
         rootCommand.Parse(args).Invoke();
     }
@@ -21,6 +21,7 @@ internal static class Program {
                 _ => throw new ArgumentException("Invalid format", nameof(format))
             };
 
+            /* NOTE: Photo corrupts here... */
             if (jpegFile == String.Empty) {
                 photo.Jpeg = Properties.Resources.EmptyJpeg;
             }
