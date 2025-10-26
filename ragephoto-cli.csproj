@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RagePhoto.Core" Version="0.7.0.1" />
+    <PackageReference Include="RagePhoto.Core" Version="0.7.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-rc.2.25502.107" />
   </ItemGroup>
 
