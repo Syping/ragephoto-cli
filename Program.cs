@@ -6,7 +6,7 @@ internal static class Program {
 
     private static void Main(String[] args) {
         RootCommand rootCommand = new("ragephoto-cli Application") {
-            GetCommand, SetCommand
+            CreateCommand, GetCommand, SetCommand
         };
         rootCommand.Parse(args).Invoke();
     }
