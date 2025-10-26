@@ -6,12 +6,12 @@ internal static class Program {
 
     private static void Main(String[] args) {
         RootCommand rootCommand = new("ragephoto-cli Application") {
-            GetCommand, SetCommand
+            CreateCommand, GetCommand, SetCommand
         };
         rootCommand.Parse(args).Invoke();
     }
 
-    private static void Create(FileInfo photoFile, String format, String jpegFile, String? title) {
+    private static void Create(String format, String jpegFile, String outputFile, String? description, String? title) {
         try {
             using Photo photo = new();
 
@@ -31,7 +31,7 @@ internal static class Program {
                 photo.Jpeg = jpegStream.ToArray();
             }
 
-            Int32 photoUid = Random.Shared.Next(1, Int32.MaxValue);
+            Int32 photoUid = Random.Shared.Next();
             if (photo.Format == PhotoFormat.GTA5) {
                 DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399));
                 photo.SetHeader("PHOTO - 10/26/25 02:28:08", 798615001, 0);
@@ -75,11 +75,19 @@ internal static class Program {
                     "}";
             }
 
+            photo.Description = description ?? String.Empty;
             photo.Title = title ?? "Custom Photo";
 
-            String tempFile = Path.GetTempFileName();
-            photo.SaveFile(tempFile);
-            File.Move(tempFile, photoFile.FullName, true);
+            if (outputFile == "-" || outputFile == String.Empty) {
+                using MemoryStream photoStream = new(photo.Save());
+                using Stream output = Console.OpenStandardOutput();
+                photoStream.CopyTo(output);
+            }
+            else {
+                String tempFile = Path.GetTempFileName();
+                photo.SaveFile(tempFile);
+                File.Move(tempFile, outputFile, true);
+            }
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
@@ -226,30 +234,35 @@ internal static class Program {
 
     private static Command CreateCommand {
         get {
-            Argument<FileInfo> photoArgument = new("photo") {
-                Description = "Photo File"
-            };
             Argument<String> formatArgument = new("format") {
-                Description = "Photo Format",
+                Description = "Photo Format"
             };
             formatArgument.CompletionSources.Add(_ => [
                 new("gta5"),
                 new("rdr2")]);
             Argument<String> jpegArgument = new("jpeg") {
                 Description = "JPEG File",
+                DefaultValueFactory = _ => "-"
             };
-            Argument<String?> titleArgument = new("title") {
-                Description = "Photo Title",
-                DefaultValueFactory = _ => null
+            Argument<String> outputArgument = new("output") {
+                Description = "Output File",
+                DefaultValueFactory = _ => "-"
+            };
+            Option<String?> descriptionOption = new("--description", "-d") {
+                Description = "Photo Description"
+            };
+            Option<String?> titleOption = new("--title", "-t") {
+                Description = "Photo Title"
             };
             Command createCommand = new("create", "Create Photo") {
-                photoArgument, formatArgument, jpegArgument, titleArgument
+                formatArgument, jpegArgument, outputArgument, descriptionOption, titleOption
             };
             createCommand.SetAction(result => Create(
-                result.GetRequiredValue(photoArgument),
                 result.GetRequiredValue(formatArgument),
                 result.GetRequiredValue(jpegArgument),
-                result.GetValue(titleArgument)));
+                result.GetRequiredValue(outputArgument),
+                result.GetValue(descriptionOption),
+                result.GetValue(titleOption)));
             return createCommand;
         }
     }
