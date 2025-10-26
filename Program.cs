@@ -37,7 +37,7 @@ internal static class Program {
 
             if (photo.Format == PhotoFormat.GTA5) {
                 DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399));
-                photo.SetHeader("PHOTO - 10/26/25 02:28:08", 0x2F99E5D9, 0x00000000);
+                photo.SetHeader("PHOTO - 10/26/25 02:28:08", 798615001, 0);
                 photo.Json = "{\"loc\":{\"x\":0,\"y\":0,\"z\":0}," +
                     "\"area\":\"SANAND\",\"street\":0,\"nm\":\"\",\"rds\":\"\"," +
                     "\"scr\":1,\"sid\":\"0x0\",\"crewid\":0,\"mid\":\"\"," +
@@ -56,7 +56,7 @@ internal static class Program {
             }
             else {
                 DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.NextInt64(-2208988801, -2240524800));
-                photo.SetHeader("PHOTO - 10/26/25 02:31:34", 0xB76BFD68, 0xACEF57D2);
+                photo.SetHeader("PHOTO - 10/26/25 02:31:34", 3077307752, 2901366738);
                 photo.Json = "{\"loc\":{\"x\":0,\"y\":0,\"z\":0}," +
                     "\"regionname\":0,\"districtname\":0,\"statename\":0,\"nm\":\"\"," +
                     "\"sid\":\"0x0\",\"crewid\":0,\"mid\":\"\",\"mode\":\"SP\"," +
