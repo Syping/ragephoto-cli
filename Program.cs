@@ -326,7 +326,7 @@ internal static class Program {
                 Description = "Photo Title"
             };
             Command createCommand = new("create", "Create Photo") {
-                formatArgument, jpegArgument, outputArgument, descriptionOption, titleOption
+                formatArgument, jpegArgument, outputArgument, descriptionOption, jsonOption, titleOption
             };
             createCommand.SetAction(result => Create(
                 result.GetRequiredValue(formatArgument),
@@ -397,7 +397,7 @@ internal static class Program {
                 Description = "Output File"
             };
             Command setCommand = new("set", "Set Photo Data") {
-                photoArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
+                photoArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
             };
             setCommand.SetAction(result => Set(
                 result.GetRequiredValue(photoArgument),
