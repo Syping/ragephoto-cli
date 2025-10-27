@@ -272,7 +272,8 @@ internal static class Program {
                 ["width"] = 1920,
                 ["height"] = 1080,
                 ["size"] = photo.JpegSize,
-                ["sign"] = photo.Sign
+                ["sign"] = photo.Sign,
+                ["meta"] = new JsonObject()
             },
             _ => throw new ArgumentException("Invalid format", nameof(format)),
         };
