@@ -81,10 +81,19 @@ internal static class Program {
         }
     }
 
-    private static void Get(FileInfo photoFile, String dataType, String outputFile) {
+    private static void Get(String inputFile, String dataType, String outputFile) {
         try {
             using Photo photo = new();
-            photo.LoadFile(photoFile.FullName);
+
+            if (inputFile == "-" || inputFile == String.Empty) {
+                using MemoryStream photoStream = new();
+                using Stream input = Console.OpenStandardInput();
+                input.CopyTo(photoStream);
+                photo.Load(photoStream.ToArray());
+            }
+            else {
+                photo.LoadFile(inputFile);
+            }
 
             Byte[] content = [];
             switch (dataType.ToLowerInvariant()) {
@@ -147,16 +156,29 @@ internal static class Program {
         }
     }
 
-    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
+    private static void Set(String inputFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
         if (format == null && jpegFile == null && description == null
             && json == null && title == null && !updateSign) {
             Console.Error.WriteLine("No value has being set");
             Environment.Exit(1);
         }
+        else if (inputFile == "-" && jpegFile == "-") {
+            Console.Error.WriteLine("Multiple pipes are not supported");
+            Environment.Exit(1);
+        }
 
         try {
             using Photo photo = new();
-            photo.LoadFile(photoFile.FullName);
+
+            if (inputFile == "-" || inputFile == String.Empty) {
+                using MemoryStream photoStream = new();
+                using Stream input = Console.OpenStandardInput();
+                input.CopyTo(photoStream);
+                photo.Load(photoStream.ToArray());
+            }
+            else {
+                photo.LoadFile(inputFile);
+            }
 
             if (format != null) {
                 photo.Format = format.ToLowerInvariant() switch {
@@ -198,7 +220,7 @@ internal static class Program {
             else {
                 String tempFile = Path.GetTempFileName();
                 photo.SaveFile(tempFile);
-                File.Move(tempFile, !String.IsNullOrEmpty(outputFile) ? outputFile : photoFile.FullName, true);
+                File.Move(tempFile, !String.IsNullOrEmpty(outputFile) ? outputFile : inputFile, true);
             }
         }
         catch (RagePhotoException exception) {
@@ -341,8 +363,8 @@ internal static class Program {
 
     private static Command GetCommand {
         get {
-            Argument<FileInfo> photoArgument = new("photo") {
-                Description = "Photo File"
+            Argument<String> inputArgument = new("input") {
+                Description = "Input File"
             };
             Argument<String> dataTypeArgument = new("dataType") {
                 Description = "Data Type",
@@ -360,10 +382,10 @@ internal static class Program {
                 DefaultValueFactory = _ => "-"
             };
             Command getCommand = new("get", "Get Photo Data") {
-                photoArgument, dataTypeArgument, outputOption
+                inputArgument, dataTypeArgument, outputOption
             };
             getCommand.SetAction(result => Get(
-                result.GetRequiredValue(photoArgument),
+                result.GetRequiredValue(inputArgument),
                 result.GetRequiredValue(dataTypeArgument),
                 result.GetRequiredValue(outputOption)));
             return getCommand;
@@ -372,8 +394,8 @@ internal static class Program {
 
     private static Command SetCommand {
         get {
-            Argument<FileInfo> photoArgument = new("photo") {
-                Description = "Photo File"
+            Argument<String> inputArgument = new("input") {
+                Description = "Input File"
             };
             Option<String?> formatOption = new("--format", "-f") {
                 Description = "Photo Format"
@@ -397,10 +419,10 @@ internal static class Program {
                 Description = "Output File"
             };
             Command setCommand = new("set", "Set Photo Data") {
-                photoArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
+                inputArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
             };
             setCommand.SetAction(result => Set(
-                result.GetRequiredValue(photoArgument),
+                result.GetRequiredValue(inputArgument),
                 result.GetValue(formatOption),
                 result.GetValue(jpegOption),
                 result.GetValue(descriptionOption),
