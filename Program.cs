@@ -147,7 +147,7 @@ internal static class Program {
         }
     }
 
-    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
+    private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
         if (format == null && jpegFile == null &&
             description == null && json == null && title == null) {
             Console.Error.WriteLine("No value has being set");
@@ -184,6 +184,9 @@ internal static class Program {
                 using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
                 input.CopyTo(jpegStream);
                 photo.Jpeg = jpegStream.ToArray();
+                photo.Json = UpdateSign(photo, photo.Json);
+            }
+            else if (updateSign) {
                 photo.Json = UpdateSign(photo, photo.Json);
             }
 
@@ -387,6 +390,9 @@ internal static class Program {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
+            Option<bool> updateSignOption = new("--update-sign", "-u") {
+                Description = "Update Photo Signature"
+            };
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
@@ -400,6 +406,7 @@ internal static class Program {
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
+                result.GetValue(updateSignOption),
                 result.GetValue(outputOption)));
             return setCommand;
         }
