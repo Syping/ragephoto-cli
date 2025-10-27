@@ -41,13 +41,13 @@ internal static class Program {
             }
 
             if (photo.Format == PhotoFormat.GTA5) {
-                photo.Json = json != null ?
+                photo.Json = json == null ?
                     InitializeJson(PhotoFormat.GTA5, photo, Random.Shared.Next(),
                     DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399))) :
                     UpdateSign(photo, photo.Json);
             }
             else {
-                photo.Json = json != null ?
+                photo.Json = json == null ?
                     InitializeJson(PhotoFormat.RDR2, photo, Random.Shared.Next(),
                     DateTimeOffset.FromUnixTimeSeconds(Random.Shared.NextInt64(-2240524800, -2208988801))) :
                     UpdateSign(photo, photo.Json);
