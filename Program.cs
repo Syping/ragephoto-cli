@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json.Nodes;
 namespace RagePhoto.Cli;
 
 internal static class Program {
@@ -11,7 +13,7 @@ internal static class Program {
         rootCommand.Parse(args).Invoke();
     }
 
-    private static void Create(String format, String jpegFile, String outputFile, String? description, String? title) {
+    private static void Create(String format, String jpegFile, String outputFile, String? description, String? json, String? title) {
         try {
             using Photo photo = new();
 
@@ -21,7 +23,13 @@ internal static class Program {
                 _ => throw new ArgumentException("Invalid format", nameof(format))
             };
 
-            /* NOTE: Photo corrupts here... */
+            if (photo.Format == PhotoFormat.GTA5) {
+                photo.SetHeader("PHOTO - 10/26/25 02:28:08", 798615001, 0);
+            }
+            else {
+                photo.SetHeader("PHOTO - 10/26/25 02:31:34", 3077307752, 2901366738);
+            }
+
             if (jpegFile == String.Empty) {
                 photo.Jpeg = Properties.Resources.EmptyJpeg;
             }
@@ -32,48 +40,17 @@ internal static class Program {
                 photo.Jpeg = jpegStream.ToArray();
             }
 
-            Int32 photoUid = Random.Shared.Next();
             if (photo.Format == PhotoFormat.GTA5) {
-                DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399));
-                photo.SetHeader("PHOTO - 10/26/25 02:28:08", 798615001, 0);
-                photo.Json = "{\"loc\":{\"x\":0,\"y\":0,\"z\":0}," +
-                    "\"area\":\"SANAND\",\"street\":0,\"nm\":\"\",\"rds\":\"\"," +
-                    "\"scr\":1,\"sid\":\"0x0\",\"crewid\":0,\"mid\":\"\"," +
-                    "\"mode\":\"FREEMODE\",\"meme\":false,\"mug\":false," +
-                    $"\"uid\":{photoUid}," + "\"time\":{" +
-                    $"\"hour\":{photoTime.Hour}," +
-                    $"\"minute\":{photoTime.Minute}," +
-                    $"\"second\":{photoTime.Second}," +
-                    $"\"day\":{photoTime.Day}," +
-                    $"\"month\":{photoTime.Month}," +
-                    $"\"year\":{photoTime.Year}" + "}," +
-                    $"\"creat\":{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}," +
-                    "\"slf\":true,\"drctr\":false,\"rsedtr\":false,\"cv\":true," +
-                    $"\"sign\":{photo.Sign}" +
-                    "}";
+                photo.Json = json != null ?
+                    InitializeJson(PhotoFormat.GTA5, photo, Random.Shared.Next(),
+                    DateTimeOffset.FromUnixTimeSeconds(Random.Shared.Next(1356998400, 1388534399))) :
+                    UpdateSign(photo, photo.Json);
             }
             else {
-                DateTimeOffset photoTime = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.NextInt64(-2240524800, -2208988801));
-                photo.SetHeader("PHOTO - 10/26/25 02:31:34", 3077307752, 2901366738);
-                photo.Json = "{\"loc\":{\"x\":0,\"y\":0,\"z\":0}," +
-                    "\"regionname\":0,\"districtname\":0,\"statename\":0,\"nm\":\"\"," +
-                    "\"sid\":\"0x0\",\"crewid\":0,\"mid\":\"\",\"mode\":\"SP\"," +
-                    "\"meme\":false,\"mug\":false," +
-                    $"\"uid\":{photoUid}," + "\"time\":{" +
-                    $"\"hour\":{photoTime.Hour}," +
-                    $"\"minute\":{photoTime.Minute}," +
-                    $"\"second\":{photoTime.Second}," +
-                    $"\"day\":{photoTime.Day}," +
-                    $"\"month\":{photoTime.Month}," +
-                    $"\"year\":{photoTime.Year}" + "}," +
-                    $"\"creat\":{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}," +
-                    "\"slf\":false,\"drctr\":false,\"rsedtr\":false,\"inphotomode\":true," +
-                    "\"advanced\":false," +
-                    "\"width\":1920," +
-                    "\"height\":1080," +
-                    $"\"size\":{photo.JpegSize}," +
-                    $"\"sign\":{photo.Sign}" +
-                    "}";
+                photo.Json = json != null ?
+                    InitializeJson(PhotoFormat.RDR2, photo, Random.Shared.Next(),
+                    DateTimeOffset.FromUnixTimeSeconds(Random.Shared.NextInt64(-2240524800, -2208988801))) :
+                    UpdateSign(photo, photo.Json);
             }
 
             photo.Description = description ?? String.Empty;
@@ -200,12 +177,14 @@ internal static class Program {
 
             if (jpegFile == String.Empty) {
                 photo.Jpeg = Properties.Resources.EmptyJpeg;
+                photo.Json = UpdateSign(photo, photo.Json);
             }
             else if (jpegFile != null) {
                 using MemoryStream jpegStream = new();
                 using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
                 input.CopyTo(jpegStream);
                 photo.Jpeg = jpegStream.ToArray();
+                photo.Json = UpdateSign(photo, photo.Json);
             }
 
             if (outputFile == "-") {
@@ -233,6 +212,89 @@ internal static class Program {
         }
     }
 
+    private static String InitializeJson(PhotoFormat format, Photo photo, Int32 photoUid, DateTimeOffset photoTime) {
+        JsonObject jsonLocation = new() {
+            ["x"] = 0,
+            ["y"] = 0,
+            ["z"] = 0
+        };
+        JsonObject jsonTime = new() {
+            ["hour"] = photoTime.Hour,
+            ["minute"] = photoTime.Minute,
+            ["second"] = photoTime.Second,
+            ["day"] = photoTime.Day,
+            ["month"] = photoTime.Month,
+            ["year"] = photoTime.Year
+        };
+        JsonObject json = format switch {
+            PhotoFormat.GTA5 => new() {
+                ["loc"] = jsonLocation,
+                ["area"] = "SANAND",
+                ["street"] = 0,
+                ["nm"] = String.Empty,
+                ["rds"] = String.Empty,
+                ["scr"] = 1,
+                ["sid"] = "0x0",
+                ["crewid"] = 0,
+                ["mid"] = String.Empty,
+                ["mode"] = "FREEMODE",
+                ["meme"] = false,
+                ["uid"] = photoUid,
+                ["time"] = jsonTime,
+                ["creat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                ["slf"] = true,
+                ["drctr"] = false,
+                ["rsedtr"] = false,
+                ["cv"] = true,
+                ["sign"] = photo.Sign
+            },
+            PhotoFormat.RDR2 => new() {
+                ["loc"] = jsonLocation,
+                ["regionname"] = 0,
+                ["districtname"] = 0,
+                ["statename"] = 0,
+                ["nm"] = String.Empty,
+                ["sid"] = "0x0",
+                ["crewid"] = 0,
+                ["mid"] = String.Empty,
+                ["mode"] = "SP",
+                ["meme"] = false,
+                ["mug"] = false,
+                ["uid"] = photoUid,
+                ["time"] = jsonTime,
+                ["creat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                ["slf"] = false,
+                ["drctr"] = false,
+                ["rsedtr"] = false,
+                ["inphotomode"] = true,
+                ["advanced"] = false,
+                ["width"] = 1920,
+                ["height"] = 1080,
+                ["size"] = photo.JpegSize,
+                ["sign"] = photo.Sign
+            },
+            _ => throw new ArgumentException("Invalid format", nameof(format)),
+        };
+        return json.ToJsonString(new() {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
+
+    private static String UpdateSign(Photo photo, String json) {
+        try {
+            if (JsonNode.Parse(json) is not JsonObject jsonObject)
+                throw new ArgumentException("Invalid json", nameof(json));
+            jsonObject["sign"] = photo.Sign;
+            return jsonObject.ToJsonString(new() {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+        }
+        catch (Exception exception) {
+            Console.Error.WriteLine($"Failed to update sign: {exception.Message}");
+            return json;
+        }
+    }
+
     private static Command CreateCommand {
         get {
             Argument<String> formatArgument = new("format") {
@@ -252,6 +314,9 @@ internal static class Program {
             Option<String?> descriptionOption = new("--description", "-d") {
                 Description = "Photo Description"
             };
+            Option<String?> jsonOption = new("--json", "-j") {
+                Description = "Photo JSON"
+            };
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
@@ -263,6 +328,7 @@ internal static class Program {
                 result.GetRequiredValue(jpegArgument),
                 result.GetRequiredValue(outputArgument),
                 result.GetValue(descriptionOption),
+                result.GetValue(jsonOption),
                 result.GetValue(titleOption)));
             return createCommand;
         }

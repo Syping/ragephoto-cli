@@ -26,8 +26,10 @@ ragephoto-cli get PGTA5123456789 json
 # Getting Title
 ragephoto-cli get PGTA5123456789 title
 
-# Replacing JPEG (Patching Signature is required after)
+# Replacing JPEG
 ragephoto-cli set PGTA5123456789 --jpeg photo.jpg
+
+# Patching Signature
 ragephoto-cli set PGTA5123456789 --json "$(ragephoto-cli get PGTA5123456789 json \
     | jq -c ".sign = $(ragephoto-cli get PGTA5123456789 sign)")"
 
