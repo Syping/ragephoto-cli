@@ -246,7 +246,8 @@ internal static class Program {
                 ["drctr"] = false,
                 ["rsedtr"] = false,
                 ["cv"] = true,
-                ["sign"] = photo.Sign
+                ["sign"] = photo.Sign,
+                ["plyrs"] = new JsonArray()
             },
             PhotoFormat.RDR2 => new() {
                 ["loc"] = jsonLocation,
