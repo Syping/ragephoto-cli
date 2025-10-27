@@ -148,8 +148,8 @@ internal static class Program {
     }
 
     private static void Set(FileInfo photoFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
-        if (format == null && jpegFile == null &&
-            description == null && json == null && title == null) {
+        if (format == null && jpegFile == null && description == null
+            && json == null && title == null && !updateSign) {
             Console.Error.WriteLine("No value has being set");
             Environment.Exit(1);
         }
