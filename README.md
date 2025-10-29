@@ -2,7 +2,7 @@
 Open Source RAGE Photo CLI based on libragephoto
 
 - Read/Write RAGE Photos with get/set commands
-- Support for stdin/stdout in JPEG option and output
+- Support for stdin/stdout in input/output and JPEG option
 
 #### Build ragephoto-cli
 
@@ -29,9 +29,12 @@ ragephoto-cli get "$INPUT" title
 # Replacing JPEG
 ragephoto-cli set "$INPUT" --jpeg "photo.jpg"
 
+# Replacing JSON
+ragephoto-cli set "$INPUT" --json "$JSON"
+
 # Patching Signature
 ragephoto-cli set "$INPUT" --update-sign
 
 # Updating Title
-ragephoto-cli set "$INPUT" --title "New Photo Title"
+ragephoto-cli set "$INPUT" --title "$TITLE"
 ```
