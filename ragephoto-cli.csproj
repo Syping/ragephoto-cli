@@ -5,10 +5,15 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>ragephoto-cli</AssemblyName>
     <RootNamespace>RagePhoto.Cli</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>Syping</Authors>
+    <Copyright>Copyright © 2025 Syping</Copyright>
+    <Description>Open Source RAGE Photo CLI based on libragephoto</Description>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Syping/ragephoto-cli</RepositoryUrl>
     <Nullable>enable</Nullable>
-    <PublishAot>true</PublishAot>
+    <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
