@@ -1,4 +1,5 @@
 ﻿using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 namespace RagePhoto.Cli;
 
@@ -69,9 +70,7 @@ internal class Json {
             },
             _ => throw new ArgumentException("Invalid format", nameof(format)),
         };
-        return json.ToJsonString(new() {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        });
+        return json.ToJsonString(SerializerOptions);
     }
 
     internal static String UpdateSign(Photo photo, String json) {
@@ -79,13 +78,15 @@ internal class Json {
             if (JsonNode.Parse(json) is not JsonObject jsonObject)
                 throw new ArgumentException("Invalid json", nameof(json));
             jsonObject["sign"] = photo.Sign;
-            return jsonObject.ToJsonString(new() {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            });
+            return jsonObject.ToJsonString(SerializerOptions);
         }
         catch (Exception exception) {
             Console.Error.WriteLine($"Failed to update sign: {exception.Message}");
             return json;
         }
     }
+
+    internal static readonly JsonSerializerOptions SerializerOptions = new() {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 }
