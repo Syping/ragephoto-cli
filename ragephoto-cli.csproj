@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RagePhoto.Core" Version="0.8.0" />
+    <PackageReference Include="RagePhoto.Core" Version="0.8.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0" />
   </ItemGroup>
 
