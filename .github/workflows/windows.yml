@@ -1,0 +1,52 @@
+name: Windows
+on: push
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    steps:
+    - name: Cloning
+      uses: actions/checkout@v5
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build ragephoto-cli
+      run: dotnet publish -c Release -f net8.0 -p:PublishAot=true -r win-x64
+    - name: Upload
+      uses: actions/upload-artifact@v5
+      with:
+        name: Windows Build
+        path: ${{github.workspace}}/bin/Release/net8.0/win-x64/publish/
+  Installer:
+    needs: [Build]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cloning
+      uses: actions/checkout@v5
+    - name: Download Windows Build
+      uses: actions/download-artifact@v6
+      with:
+        name: Windows Build
+        path: ${{github.workspace}}/.build
+    - name: Install NSIS
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install nsis -qq
+    - name: Prepare NSIS Scripts
+      run: |
+        for file in ".build"/*; do
+          if [ -f "${file}" ]; then
+            echo "File \"${file}\"" >> .nsis/install.nsh
+            echo "Delete \"\$INSTDIR\\${file##*/}\"" >> .nsis/uninstall.nsh
+          fi
+        done
+    - name: Build Installer
+      run: makensis "-XTarget amd64-unicode" -NOCD .nsis/ragephoto-cli.nsi
+    - name: Upload
+      uses: actions/upload-artifact@v5
+      with:
+        name: Windows Installer
+        path: ${{github.workspace}}/ragephoto-cli_setup.exe
