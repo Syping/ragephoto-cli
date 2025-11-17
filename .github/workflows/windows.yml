@@ -14,12 +14,15 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build ragephoto-cli
-      run: dotnet publish -c Release -f net8.0 -p:PublishAot=true -r win-x64
+      run: dotnet publish ragephoto-cli.csproj -c Release -p:PublishAot=true -r win-x64 -o ${{github.workspace}}\.build
     - name: Upload
       uses: actions/upload-artifact@v5
       with:
         name: Windows Build
-        path: ${{github.workspace}}/bin/Release/net8.0/win-x64/publish/
+        if-no-files-found: error
+        path: |
+          ${{github.workspace}}\.build\libragephoto.dll
+          ${{github.workspace}}\.build\ragephoto-cli.exe
   Installer:
     needs: [Build]
     runs-on: ubuntu-latest
