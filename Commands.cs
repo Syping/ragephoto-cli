@@ -1,10 +1,12 @@
-﻿using System.CommandLine;
+﻿using Microsoft.Win32;
+using System.CommandLine;
+using System.Runtime.InteropServices;
 using System.Text;
 namespace RagePhoto.Cli;
 
 internal static class Commands {
 
-    internal static void Create(String format, String jpegFile, String outputFile, String? description, String? json, String? title) {
+    internal static void CreateFunction(String format, String jpegFile, String outputFile, String? description, String? json, String? title) {
         try {
             using Photo photo = new();
 
@@ -72,7 +74,7 @@ internal static class Commands {
         }
     }
 
-    internal static void Get(String inputFile, String dataType, String outputFile) {
+    internal static void GetFunction(String inputFile, String dataType, String outputFile) {
         try {
             using Photo photo = new();
 
@@ -147,7 +149,7 @@ internal static class Commands {
         }
     }
 
-    internal static void Set(String inputFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
+    internal static void SetFunction(String inputFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
         if (format == null && jpegFile == null && description == null
             && json == null && title == null && !updateSign) {
             Console.Error.WriteLine("No value has being set");
@@ -228,6 +230,48 @@ internal static class Commands {
         }
     }
 
+    internal static void PathFunction(String command) {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return;
+        try {
+            if (command == "register" || command == "unregister") {
+                String appPath = Path.GetDirectoryName(Environment.ProcessPath) ??
+                    throw new Exception("Application path can not be found");
+                String fullAppPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(appPath));
+                using RegistryKey environmentKey = Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", true) ??
+                    throw new Exception("Environment registry key can not be opened");
+                String? path = environmentKey.GetValue(
+                    "Path", null, RegistryValueOptions.DoNotExpandEnvironmentNames) as String ??
+                    throw new Exception("Path registry value is invalid");
+                List<String> paths = [.. path.Split(';', StringSplitOptions.RemoveEmptyEntries)];
+                for (Int32 i = 0; i < paths.Count; i++) {
+                    if (!String.Equals(
+                        fullAppPath,
+                        Path.TrimEndingDirectorySeparator(Path.GetFullPath(paths[i])),
+                        StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    if (command == "register")
+                        return;
+                    paths.RemoveAt(i);
+                    environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
+                    return;
+                }
+                if (command == "unregister")
+                    return;
+                paths.Add(fullAppPath);
+                environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
+            }
+            else {
+                Console.Error.WriteLine("Invalid path command supplied");
+            }
+        }
+        catch (Exception exception) {
+            Console.Error.WriteLine(exception.Message);
+            Environment.Exit(-1);
+        }
+    }
+
     internal static Command CreateCommand {
         get {
             Argument<String> formatArgument = new("format") {
@@ -256,7 +300,7 @@ internal static class Commands {
             Command createCommand = new("create", "Create Photo") {
                 formatArgument, jpegArgument, outputArgument, descriptionOption, jsonOption, titleOption
             };
-            createCommand.SetAction(result => Create(
+            createCommand.SetAction(result => CreateFunction(
                 result.GetRequiredValue(formatArgument),
                 result.GetRequiredValue(jpegArgument),
                 result.GetRequiredValue(outputArgument),
@@ -290,7 +334,7 @@ internal static class Commands {
             Command getCommand = new("get", "Get Photo Data") {
                 inputArgument, dataTypeArgument, outputOption
             };
-            getCommand.SetAction(result => Get(
+            getCommand.SetAction(result => GetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetRequiredValue(dataTypeArgument),
                 result.GetRequiredValue(outputOption)));
@@ -327,7 +371,7 @@ internal static class Commands {
             Command setCommand = new("set", "Set Photo Data") {
                 inputArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
             };
-            setCommand.SetAction(result => Set(
+            setCommand.SetAction(result => SetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetValue(formatOption),
                 result.GetValue(jpegOption),
@@ -337,6 +381,24 @@ internal static class Commands {
                 result.GetValue(updateSignOption),
                 result.GetValue(outputOption)));
             return setCommand;
+        }
+    }
+
+    internal static Command PathCommand {
+        get {
+            Argument<String> commandArgument = new("command") {
+                Description = "Path Command"
+            };
+            commandArgument.CompletionSources.Add(_ => [
+                new ("register"),
+                new ("unregister")]);
+            Command pathCommand = new("path", "Register/Unregister Path") {
+                commandArgument
+            };
+            pathCommand.Hidden = true;
+            pathCommand.SetAction(result => PathFunction(
+                result.GetRequiredValue(commandArgument)));
+            return pathCommand;
         }
     }
 }

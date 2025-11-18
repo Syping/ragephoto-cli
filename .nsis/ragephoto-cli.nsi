@@ -93,7 +93,7 @@ Section -UninstallPrevious
 ReadRegStr $0 ${REG_ROOT} "${UNINSTALL_PATH}" "UninstallString"
 ${If} $0 != ""
 	${GetParent} $0 $1
-	ExecWait "$0 /S _?=$1"
+	ExecWait '"$0" /S "_?=$1"'
 ${EndIf}
 SectionEnd
 
@@ -132,10 +132,13 @@ WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}" "DisplayName" "${APP_NAME}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}" "DisplayVersion" "${APP_VERSION}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}" "Publisher" "${APP_CREATOR}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}" "UninstallString" "$INSTDIR\uninstall.exe"
+
+ExecWait '"$INSTDIR/${APP_EXECUTABLE}" path register'
 SectionEnd
 
 Section Uninstall
 ${INSTALL_TYPE}
+ExecWait '"$INSTDIR/${APP_EXECUTABLE}" path unregister'
 !include ".nsis/uninstall.nsh"
 Delete "$INSTDIR\uninstall.exe"
 RmDir "$INSTDIR"
