@@ -6,7 +6,7 @@ namespace RagePhoto.Cli;
 
 internal static class Commands {
 
-    internal static void CreateFunction(String format, String jpegFile, String outputFile, String? description, String? json, String? title) {
+    internal static void CreateFunction(String format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
         try {
             using Photo photo = new();
 
@@ -23,10 +23,10 @@ internal static class Commands {
                 photo.SetHeader("PHOTO - 10/26/25 02:31:34", 3077307752, 2901366738);
             }
 
-            if (jpegFile == String.Empty) {
+            if (String.IsNullOrEmpty(jpegFile)) {
                 photo.Jpeg = Properties.Resources.EmptyJpeg;
             }
-            else if (jpegFile != null) {
+            else {
                 using MemoryStream jpegStream = new();
                 using Stream input = jpegFile == "-" ? Console.OpenStandardInput() : File.OpenRead(jpegFile);
                 input.CopyTo(jpegStream);
@@ -49,7 +49,7 @@ internal static class Commands {
             photo.Description = description ?? String.Empty;
             photo.Title = title ?? "Custom Photo";
 
-            if (outputFile == "-" || outputFile == String.Empty) {
+            if (outputFile == "-" || String.IsNullOrEmpty(outputFile)) {
                 using MemoryStream photoStream = new(photo.Save());
                 using Stream output = Console.OpenStandardOutput();
                 photoStream.CopyTo(output);
@@ -280,13 +280,8 @@ internal static class Commands {
             formatArgument.CompletionSources.Add(_ => [
                 new("gta5"),
                 new("rdr2")]);
-            Argument<String> jpegArgument = new("jpeg") {
-                Description = "JPEG File",
-                DefaultValueFactory = _ => "-"
-            };
-            Argument<String> outputArgument = new("output") {
-                Description = "Output File",
-                DefaultValueFactory = _ => "-"
+            Option<String?> jpegOption = new("--jpeg", "--image", "-i") {
+                Description = "JPEG File"
             };
             Option<String?> descriptionOption = new("--description", "-d") {
                 Description = "Photo Description"
@@ -297,16 +292,19 @@ internal static class Commands {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
+            Option<String?> outputOption = new("--output", "-o") {
+                Description = "Output File"
+            };
             Command createCommand = new("create", "Create Photo") {
-                formatArgument, jpegArgument, outputArgument, descriptionOption, jsonOption, titleOption
+                formatArgument, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
             };
             createCommand.SetAction(result => CreateFunction(
                 result.GetRequiredValue(formatArgument),
-                result.GetRequiredValue(jpegArgument),
-                result.GetRequiredValue(outputArgument),
+                result.GetValue(jpegOption),
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
-                result.GetValue(titleOption)));
+                result.GetValue(titleOption),
+                result.GetValue(outputOption)));
             return createCommand;
         }
     }
