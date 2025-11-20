@@ -6,7 +6,7 @@ namespace RagePhoto.Cli;
 
 internal static class Commands {
 
-    internal static void CreateFunction(String format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
+    internal static Int32 CreateFunction(String format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
         try {
             using Photo photo = new();
 
@@ -59,22 +59,23 @@ internal static class Commands {
                 photo.SaveFile(tempFile);
                 File.Move(tempFile, outputFile, true);
             }
+            return 0;
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(exception.Photo != null ? (Int32)exception.Error + 2 : -1);
+            return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (ArgumentException exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(1);
+            return 1;
         }
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(-1);
+            return -1;
         }
     }
 
-    internal static void GetFunction(String inputFile, String dataType, String outputFile) {
+    internal static Int32 GetFunction(String inputFile, String dataType, String outputFile) {
         try {
             using Photo photo = new();
 
@@ -121,8 +122,7 @@ internal static class Commands {
                     break;
                 default:
                     Console.Error.WriteLine($"Unknown Content Type: {dataType}");
-                    Environment.Exit(1);
-                    break;
+                    return 1;
             }
 
             if (outputFile == "-" || outputFile == String.Empty) {
@@ -138,26 +138,27 @@ internal static class Commands {
                 }
                 File.Move(tempFile, outputFile, true);
             }
+            return 0;
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(exception.Photo != null ? (Int32)exception.Error + 2 : -1);
+            return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(-1);
+            return -1;
         }
     }
 
-    internal static void SetFunction(String inputFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
+    internal static Int32 SetFunction(String inputFile, String? format, String? jpegFile, String? description, String? json, String? title, bool updateSign, String? outputFile) {
         if (format == null && jpegFile == null && description == null
             && json == null && title == null && !updateSign) {
             Console.Error.WriteLine("No value has being set");
-            Environment.Exit(1);
+            return 1;
         }
         else if (inputFile == "-" && jpegFile == "-") {
             Console.Error.WriteLine("Multiple pipes are not supported");
-            Environment.Exit(1);
+            return 1;
         }
 
         try {
@@ -215,24 +216,25 @@ internal static class Commands {
                 photo.SaveFile(tempFile);
                 File.Move(tempFile, !String.IsNullOrEmpty(outputFile) ? outputFile : inputFile, true);
             }
+            return 0;
         }
         catch (RagePhotoException exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(exception.Photo != null ? (Int32)exception.Error + 2 : -1);
+            return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (ArgumentException exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(1);
+            return 1;
         }
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(-1);
+            return -1;
         }
     }
 
-    internal static void PathFunction(String command) {
+    internal static Int32 PathFunction(String command) {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return;
+            return 0;
         try {
             if (command == "register" || command == "unregister") {
                 String appPath = Path.GetDirectoryName(Environment.ProcessPath) ??
@@ -252,23 +254,25 @@ internal static class Commands {
                         StringComparison.OrdinalIgnoreCase))
                         continue;
                     if (command == "register")
-                        return;
+                        return 0;
                     paths.RemoveAt(i);
                     environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
-                    return;
+                    return 0;
                 }
                 if (command == "unregister")
-                    return;
+                    return 0;
                 paths.Add(fullAppPath);
                 environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
+                return 0;
             }
             else {
                 Console.Error.WriteLine("Invalid path command supplied");
+                return 0;
             }
         }
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
-            Environment.Exit(-1);
+            return -1;
         }
     }
 
@@ -298,13 +302,13 @@ internal static class Commands {
             Command createCommand = new("create", "Create Photo") {
                 formatArgument, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
             };
-            createCommand.SetAction(result => CreateFunction(
+            createCommand.SetAction(result => Environment.Exit(CreateFunction(
                 result.GetRequiredValue(formatArgument),
                 result.GetValue(jpegOption),
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
-                result.GetValue(outputOption)));
+                result.GetValue(outputOption))));
             return createCommand;
         }
     }
@@ -332,10 +336,10 @@ internal static class Commands {
             Command getCommand = new("get", "Get Photo Data") {
                 inputArgument, dataTypeArgument, outputOption
             };
-            getCommand.SetAction(result => GetFunction(
+            getCommand.SetAction(result => Environment.Exit(GetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetRequiredValue(dataTypeArgument),
-                result.GetRequiredValue(outputOption)));
+                result.GetRequiredValue(outputOption))));
             return getCommand;
         }
     }
@@ -394,8 +398,8 @@ internal static class Commands {
                 commandArgument
             };
             pathCommand.Hidden = true;
-            pathCommand.SetAction(result => PathFunction(
-                result.GetRequiredValue(commandArgument)));
+            pathCommand.SetAction(result => Environment.Exit(PathFunction(
+                result.GetRequiredValue(commandArgument))));
             return pathCommand;
         }
     }
