@@ -93,15 +93,15 @@ internal static class Commands {
             switch (dataType.ToLowerInvariant()) {
                 case "d":
                 case "description":
-                    content = Encoding.UTF8.GetBytes(photo.Description);
+                    content = Encoding.UTF8.GetBytes($"{photo.Description}\n");
                     break;
                 case "f":
                 case "format":
-                    content = Encoding.UTF8.GetBytes(photo.Format switch {
+                    content = Encoding.UTF8.GetBytes($"{photo.Format switch {
                         PhotoFormat.GTA5 => "gta5",
                         PhotoFormat.RDR2 => "rdr2",
                         _ => "unknown"
-                    });
+                    }}\n");
                     break;
                 case "i":
                 case "image":
@@ -110,15 +110,15 @@ internal static class Commands {
                     break;
                 case "j":
                 case "json":
-                    content = Encoding.UTF8.GetBytes(photo.Json);
+                    content = Encoding.UTF8.GetBytes($"{photo.Json}\n");
                     break;
                 case "s":
                 case "sign":
-                    content = Encoding.UTF8.GetBytes($"{photo.Sign}");
+                    content = Encoding.UTF8.GetBytes($"{photo.Sign}\n");
                     break;
                 case "t":
                 case "title":
-                    content = Encoding.UTF8.GetBytes(photo.Title);
+                    content = Encoding.UTF8.GetBytes($"{photo.Title}\n");
                     break;
                 default:
                     Console.Error.WriteLine($"Unknown Content Type: {dataType}");
