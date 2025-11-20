@@ -6,7 +6,7 @@ namespace RagePhoto.Cli;
 
 internal static class Commands {
 
-    internal static Int32 CreateFunction(String format, String? jpegFile, String? description, String? json, String? title, String? outputFile) {
+    internal static Int32 CreateFunction(String format, String? jpegFile, String? description, String? json, String? title, String outputFile) {
         try {
             using Photo photo = new();
 
@@ -49,7 +49,7 @@ internal static class Commands {
             photo.Description = description ?? String.Empty;
             photo.Title = title ?? "Custom Photo";
 
-            if (outputFile == "-" || String.IsNullOrEmpty(outputFile)) {
+            if (outputFile == "-" || outputFile == String.Empty) {
                 using MemoryStream photoStream = new(photo.Save());
                 using Stream output = Console.OpenStandardOutput();
                 photoStream.CopyTo(output);
@@ -296,8 +296,9 @@ internal static class Commands {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Photo Title"
             };
-            Option<String?> outputOption = new("--output", "-o") {
-                Description = "Output File"
+            Option<String> outputOption = new("--output", "-o") {
+                Description = "Output File",
+                DefaultValueFactory = _ => "-"
             };
             Command createCommand = new("create", "Create Photo") {
                 formatArgument, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
@@ -308,7 +309,7 @@ internal static class Commands {
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
-                result.GetValue(outputOption))));
+                result.GetRequiredValue(outputOption))));
             return createCommand;
         }
     }
