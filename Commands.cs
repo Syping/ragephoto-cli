@@ -309,13 +309,13 @@ internal static class Commands {
             Command createCommand = new("create", "Create Photo") {
                 formatArgument, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
             };
-            createCommand.SetAction(result => Environment.Exit(CreateFunction(
+            createCommand.SetAction(result => Environment.ExitCode = CreateFunction(
                 result.GetRequiredValue(formatArgument),
                 result.GetValue(jpegOption),
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
-                result.GetRequiredValue(outputOption))));
+                result.GetRequiredValue(outputOption)));
             return createCommand;
         }
     }
@@ -355,10 +355,10 @@ internal static class Commands {
             Command getCommand = new("get", "Get Photo Data") {
                 inputArgument, dataTypeArgument, outputOption
             };
-            getCommand.SetAction(result => Environment.Exit(GetFunction(
+            getCommand.SetAction(result => Environment.ExitCode = GetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetRequiredValue(dataTypeArgument),
-                result.GetRequiredValue(outputOption))));
+                result.GetRequiredValue(outputOption)));
             return getCommand;
         }
     }
@@ -392,7 +392,7 @@ internal static class Commands {
             Command setCommand = new("set", "Set Photo Data") {
                 inputArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
             };
-            setCommand.SetAction(result => SetFunction(
+            setCommand.SetAction(result => Environment.ExitCode = SetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetValue(formatOption),
                 result.GetValue(jpegOption),
@@ -417,8 +417,8 @@ internal static class Commands {
                 commandArgument
             };
             pathCommand.Hidden = true;
-            pathCommand.SetAction(result => Environment.Exit(PathFunction(
-                result.GetRequiredValue(commandArgument))));
+            pathCommand.SetAction(result => Environment.ExitCode = PathFunction(
+                result.GetRequiredValue(commandArgument)));
             return pathCommand;
         }
     }
