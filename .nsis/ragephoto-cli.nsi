@@ -82,7 +82,7 @@ Section -UninstallPrevious
 ReadRegStr $0 ${REG_ROOT} "${UNINSTALL_PATH}" "UninstallString"
 ${If} $0 != ""
 	${GetParent} $0 $1
-	ExecWait '"$0" /S "_?=$1"'
+	ExecWait '"$0" /S _?=$1'
 ${EndIf}
 SectionEnd
 
