@@ -121,7 +121,7 @@ internal static class Commands {
                     content = Encoding.UTF8.GetBytes($"{photo.Title}\n");
                     break;
                 default:
-                    Console.Error.WriteLine($"Unknown Content Type: {dataType}");
+                    Console.Error.WriteLine($"Unknown Data Type: {dataType}");
                     return 1;
             }
 
@@ -284,6 +284,12 @@ internal static class Commands {
             formatArgument.CompletionSources.Add(_ => [
                 new("gta5"),
                 new("rdr2")]);
+            formatArgument.Validators.Add(result => {
+                String[] formats = ["gta5", "rdr2"];
+                String format = result.GetValueOrDefault<String>();
+                if (!formats.Contains(format, StringComparer.InvariantCultureIgnoreCase))
+                    result.AddError("Invalid Photo Format.");
+            });
             Option<String?> jpegOption = new("--jpeg", "--image", "-i") {
                 Description = "JPEG File"
             };
@@ -330,6 +336,18 @@ internal static class Commands {
                 new("json"),
                 new("sign"),
                 new("title")]);
+            dataTypeArgument.Validators.Add(result => {
+                String[] dataTypes = [
+                    "d", "description",
+                    "f", "format",
+                    "i", "image", "jpeg",
+                    "j", "json",
+                    "s", "sign",
+                    "t", "title"];
+                String dataType = result.GetValueOrDefault<String>();
+                if (!dataTypes.Contains(dataType, StringComparer.InvariantCultureIgnoreCase))
+                    result.AddError($"Unknown Data Type: {dataType}.");
+            });
             Option<String> outputOption = new("--output", "-o") {
                 Description = "Output File",
                 DefaultValueFactory = _ => "-"
