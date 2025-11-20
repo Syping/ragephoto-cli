@@ -13,7 +13,7 @@ internal static class Commands {
             photo.Format = format.ToLowerInvariant() switch {
                 "gta5" => PhotoFormat.GTA5,
                 "rdr2" => PhotoFormat.RDR2,
-                _ => throw new ArgumentException("Invalid format", nameof(format))
+                _ => throw new ArgumentException("Invalid Photo Format", nameof(format))
             };
 
             if (photo.Format == PhotoFormat.GTA5) {
@@ -178,7 +178,7 @@ internal static class Commands {
                 photo.Format = format.ToLowerInvariant() switch {
                     "gta5" => PhotoFormat.GTA5,
                     "rdr2" => PhotoFormat.RDR2,
-                    _ => throw new ArgumentException("Invalid format", nameof(format))
+                    _ => throw new ArgumentException("Invalid Photo Format", nameof(format))
                 };
             }
 
@@ -238,14 +238,14 @@ internal static class Commands {
         try {
             if (command == "register" || command == "unregister") {
                 String appPath = Path.GetDirectoryName(Environment.ProcessPath) ??
-                    throw new Exception("Application path can not be found");
+                    throw new Exception("Application Path can not be found");
                 String fullAppPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(appPath));
                 using RegistryKey environmentKey = Registry.LocalMachine.OpenSubKey(
                     @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", true) ??
-                    throw new Exception("Environment registry key can not be opened");
+                    throw new Exception("Environment Registry Key can not be opened");
                 String? path = environmentKey.GetValue(
                     "Path", null, RegistryValueOptions.DoNotExpandEnvironmentNames) as String ??
-                    throw new Exception("Path registry value is invalid");
+                    throw new Exception("Path Registry Value is invalid");
                 List<String> paths = [.. path.Split(';', StringSplitOptions.RemoveEmptyEntries)];
                 for (Int32 i = 0; i < paths.Count; i++) {
                     if (!String.Equals(
@@ -265,10 +265,8 @@ internal static class Commands {
                 environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
                 return 0;
             }
-            else {
-                Console.Error.WriteLine("Invalid path command supplied");
-                return 0;
-            }
+            Console.Error.WriteLine("Invalid Path Command");
+            return 1;
         }
         catch (Exception exception) {
             Console.Error.WriteLine(exception.Message);
@@ -306,7 +304,7 @@ internal static class Commands {
                 Description = "Output File",
                 DefaultValueFactory = _ => "-"
             };
-            Command createCommand = new("create", "Create Photo") {
+            Command createCommand = new("create", "Create a new Photo") {
                 formatArgument, jpegOption, descriptionOption, jsonOption, titleOption, outputOption
             };
             createCommand.SetAction(result => Environment.ExitCode = CreateFunction(
@@ -352,7 +350,7 @@ internal static class Commands {
                 Description = "Output File",
                 DefaultValueFactory = _ => "-"
             };
-            Command getCommand = new("get", "Get Photo Data") {
+            Command getCommand = new("get", "Get Data from a Photo") {
                 inputArgument, dataTypeArgument, outputOption
             };
             getCommand.SetAction(result => Environment.ExitCode = GetFunction(
@@ -389,7 +387,7 @@ internal static class Commands {
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
-            Command setCommand = new("set", "Set Photo Data") {
+            Command setCommand = new("set", "Set Data from a Photo") {
                 inputArgument, formatOption, jpegOption, descriptionOption, jsonOption, titleOption, updateSignOption, outputOption
             };
             setCommand.SetAction(result => Environment.ExitCode = SetFunction(
@@ -413,6 +411,12 @@ internal static class Commands {
             commandArgument.CompletionSources.Add(_ => [
                 new ("register"),
                 new ("unregister")]);
+            commandArgument.Validators.Add(result => {
+                String[] commands = ["register", "unregister"];
+                String command = result.GetValueOrDefault<String>();
+                if (!commands.Contains(command, StringComparer.InvariantCultureIgnoreCase))
+                    result.AddError("Invalid Path Command.");
+            });
             Command pathCommand = new("path", "Register/Unregister Path") {
                 commandArgument
             };
