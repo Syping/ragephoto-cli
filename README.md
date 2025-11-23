@@ -26,15 +26,15 @@ ragephoto-cli get "$INPUT" json
 # Getting Title
 ragephoto-cli get "$INPUT" title
 
-# Replacing JPEG
-ragephoto-cli set "$INPUT" --jpeg "photo.jpg"
+# Replacing Image
+ragephoto-cli set "$INPUT" --image "photo.jpg"
 
 # Replacing JSON
 ragephoto-cli set "$INPUT" --json "$JSON"
 
-# Patching Signature
-ragephoto-cli set "$INPUT" --update-sign
-
-# Updating Title
+# Replacing Title
 ragephoto-cli set "$INPUT" --title "$TITLE"
+
+# Updating JSON (Fixes some JSON errors)
+ragephoto-cli set "$INPUT" --update-json
 ```
