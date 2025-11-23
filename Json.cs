@@ -39,6 +39,7 @@ internal class Json {
                 ["mid"] = String.Empty,
                 ["mode"] = "FREEMODE",
                 ["meme"] = false,
+                ["mug"] = false,
                 ["uid"] = uid,
                 ["time"] = jsonTime,
                 ["creat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
