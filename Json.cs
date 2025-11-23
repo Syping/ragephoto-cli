@@ -93,12 +93,12 @@ internal class Json {
             else {
                 uid = uidValue.GetValue<Int32>();
             }
+            jsonObject["sign"] = photo.Sign;
             if (photo.Format == PhotoFormat.RDR2) {
                 jsonObject["width"] = size.Width;
                 jsonObject["height"] = size.Height;
+                jsonObject["size"] = photo.JpegSize;
             }
-            jsonObject["sign"] = photo.Sign;
-            jsonObject["size"] = photo.JpegSize;
             return jsonObject.ToJsonString(SerializerOptions);
         }
         catch (Exception exception) {
