@@ -1,25 +1,32 @@
-﻿using System.Text.Encodings.Web;
+﻿using SixLabors.ImageSharp;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 namespace RagePhoto.Cli;
 
 internal class Json {
 
-    internal static String Initialize(PhotoFormat format, Photo photo, Int32 photoUid, DateTimeOffset photoTime) {
+    internal static String Initialize(Photo photo, Size size, out Int32 uid) {
         JsonObject jsonLocation = new() {
             ["x"] = 0,
             ["y"] = 0,
             ["z"] = 0
         };
+        DateTimeOffset time = DateTimeOffset.FromUnixTimeSeconds(photo.Format switch {
+            PhotoFormat.GTA5 => Random.Shared.Next(1356998400, 1388534399),
+            PhotoFormat.RDR2 => Random.Shared.NextInt64(-2240524800, -2208988801),
+            _ => throw new ArgumentException("Invalid Format")
+        });
         JsonObject jsonTime = new() {
-            ["hour"] = photoTime.Hour,
-            ["minute"] = photoTime.Minute,
-            ["second"] = photoTime.Second,
-            ["day"] = photoTime.Day,
-            ["month"] = photoTime.Month,
-            ["year"] = photoTime.Year
+            ["hour"] = time.Hour,
+            ["minute"] = time.Minute,
+            ["second"] = time.Second,
+            ["day"] = time.Day,
+            ["month"] = time.Month,
+            ["year"] = time.Year
         };
-        JsonObject json = format switch {
+        uid = Random.Shared.Next();
+        JsonObject json = photo.Format switch {
             PhotoFormat.GTA5 => new() {
                 ["loc"] = jsonLocation,
                 ["area"] = "SANAND",
@@ -32,7 +39,7 @@ internal class Json {
                 ["mid"] = String.Empty,
                 ["mode"] = "FREEMODE",
                 ["meme"] = false,
-                ["uid"] = photoUid,
+                ["uid"] = uid,
                 ["time"] = jsonTime,
                 ["creat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 ["slf"] = true,
@@ -54,7 +61,7 @@ internal class Json {
                 ["mode"] = "SP",
                 ["meme"] = false,
                 ["mug"] = false,
-                ["uid"] = photoUid,
+                ["uid"] = uid,
                 ["time"] = jsonTime,
                 ["creat"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 ["slf"] = false,
@@ -62,26 +69,40 @@ internal class Json {
                 ["rsedtr"] = false,
                 ["inphotomode"] = true,
                 ["advanced"] = false,
-                ["width"] = 1920,
-                ["height"] = 1080,
+                ["width"] = size.Width,
+                ["height"] = size.Height,
                 ["size"] = photo.JpegSize,
                 ["sign"] = photo.Sign,
                 ["meta"] = new JsonObject()
             },
-            _ => throw new ArgumentException("Invalid format", nameof(format)),
+            _ => throw new ArgumentException("Invalid Format")
         };
         return json.ToJsonString(SerializerOptions);
     }
 
-    internal static String UpdateSign(Photo photo, String json) {
+    internal static String Update(Photo photo, Size size, String json, out Int32 uid) {
         try {
             if (JsonNode.Parse(json) is not JsonObject jsonObject)
-                throw new ArgumentException("Invalid json", nameof(json));
+                throw new ArgumentException("Invalid JSON", nameof(json));
+            if (jsonObject["uid"] is not JsonValue uidValue ||
+                uidValue.GetValueKind() != JsonValueKind.Number) {
+                uid = Random.Shared.Next();
+                jsonObject["uid"] = uid;
+            }
+            else {
+                uid = uidValue.GetValue<Int32>();
+            }
+            if (photo.Format == PhotoFormat.RDR2) {
+                jsonObject["width"] = size.Width;
+                jsonObject["height"] = size.Height;
+            }
             jsonObject["sign"] = photo.Sign;
+            jsonObject["size"] = photo.JpegSize;
             return jsonObject.ToJsonString(SerializerOptions);
         }
         catch (Exception exception) {
-            Console.Error.WriteLine($"Failed to update sign: {exception.Message}");
+            Console.Error.WriteLine($"Failed to update JSON: {exception.Message}");
+            uid = 0;
             return json;
         }
     }
