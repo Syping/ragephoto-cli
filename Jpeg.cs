@@ -30,23 +30,28 @@ internal class Jpeg {
     }
 
     internal static Byte[] GetJpeg(Stream input, bool imageAsIs, out Size size) {
-        if (!imageAsIs) {
-            using Image image = Image.Load(input);
-            size = image.Size;
-            image.Metadata.ExifProfile = null;
-            using MemoryStream jpegStream = new();
-            image.SaveAsJpeg(jpegStream, new() {
-                Quality = 100,
-                ColorType = JpegEncodingColor.YCbCrRatio444
-            });
-            return jpegStream.ToArray();
+        try {
+            if (imageAsIs) {
+                using MemoryStream jpegStream = new();
+                input.CopyTo(jpegStream);
+                Byte[] jpeg = jpegStream.ToArray();
+                size = GetSize(jpeg);
+                return jpeg;
+            }
+            else {
+                using Image image = Image.Load(input);
+                size = image.Size;
+                image.Metadata.ExifProfile = null;
+                using MemoryStream jpegStream = new();
+                image.SaveAsJpeg(jpegStream, new() {
+                    Quality = 100,
+                    ColorType = JpegEncodingColor.YCbCrRatio444
+                });
+                return jpegStream.ToArray();
+            }
         }
-        else {
-            using MemoryStream jpegStream = new();
-            input.CopyTo(jpegStream);
-            Byte[] jpeg = jpegStream.ToArray();
-            size = GetSize(jpeg);
-            return jpeg;
+        catch (UnknownImageFormatException exception) {
+            throw new Exception("Unsupported Image Format", exception);
         }
     }
 
