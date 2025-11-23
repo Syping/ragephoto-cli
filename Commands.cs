@@ -49,11 +49,11 @@ internal static partial class Commands {
                     File.Move(tempFile, outputFile, true);
                 }
                 else {
-                    outputFile = Path.Join(Environment.CurrentDirectory, $"{photo.Format switch {
+                    outputFile = $"{photo.Format switch {
                         PhotoFormat.GTA5 => "PGTA5",
                         PhotoFormat.RDR2 => "PRDR3",
                         _ => String.Empty
-                    }}{uid}");
+                    }}{uid}";
                     File.Move(tempFile, outputFile, true);
                     Console.WriteLine(outputFile);
                 }
