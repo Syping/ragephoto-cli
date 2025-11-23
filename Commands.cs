@@ -5,8 +5,8 @@ namespace RagePhoto.Cli;
 
 internal static partial class Commands {
 
-    internal static Int32 CreateFunction(String format, String? imageFile, bool imageAsIs,
-        String? description, String? json, String? title, String? outputFile) {
+    internal static Int32 CreateFunction(String format, String? imageFile, String? description,
+        String? json, String? title, String? outputFile, bool imageAsIs) {
         try {
             using Photo photo = new();
 
@@ -62,15 +62,21 @@ internal static partial class Commands {
             return 0;
         }
         catch (RagePhotoException exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (ArgumentException exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return 1;
         }
         catch (Exception exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return -1;
         }
     }
@@ -139,17 +145,21 @@ internal static partial class Commands {
             return 0;
         }
         catch (RagePhotoException exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (Exception exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return -1;
         }
     }
 
-    internal static Int32 SetFunction(String inputFile, String? format, String? imageFile, bool imageAsIs,
-        String? description, String? json, String? title, bool updateJson, String? outputFile) {
+    internal static Int32 SetFunction(String inputFile, String? format, String? imageFile, String? description,
+        String? json, String? title, bool updateJson, String? outputFile, bool imageAsIs) {
         try {
             if (format == null && imageFile == null && description == null
                 && json == null && title == null && !updateJson) {
@@ -215,15 +225,21 @@ internal static partial class Commands {
             return 0;
         }
         catch (RagePhotoException exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return exception.Photo != null ? (Int32)exception.Error + 2 : -1;
         }
         catch (ArgumentException exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return 1;
         }
         catch (Exception exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return -1;
         }
     }
@@ -245,9 +261,6 @@ internal static partial class Commands {
             Option<String?> imageOption = new("--image", "-i", "--jpeg") {
                 Description = "Image File"
             };
-            Option<bool> imageAsIsOption = new("--image-as-is") {
-                Description = "Image as-is"
-            };
             Option<String?> descriptionOption = new("--description", "-d") {
                 Description = "Description"
             };
@@ -260,23 +273,26 @@ internal static partial class Commands {
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
+            Option<bool> imageAsIsOption = new("--image-as-is") {
+                Description = "Force image being set as-is"
+            };
             Command createCommand = new("create", "Create a new Photo") {
                 formatArgument,
                 imageOption,
-                imageAsIsOption,
                 descriptionOption,
                 jsonOption,
                 titleOption,
-                outputOption
+                outputOption,
+                imageAsIsOption
             };
             createCommand.SetAction(result => Environment.ExitCode = CreateFunction(
                 result.GetRequiredValue(formatArgument),
                 result.GetValue(imageOption),
-                result.GetValue(imageAsIsOption),
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
-                result.GetValue(outputOption)));
+                result.GetValue(outputOption),
+                result.GetValue(imageAsIsOption)));
             return createCommand;
         }
     }
@@ -337,9 +353,6 @@ internal static partial class Commands {
             Option<String?> imageOption = new("--image", "-i", "--jpeg") {
                 Description = "Image File"
             };
-            Option<bool> imageAsIsOption = new("--image-as-is") {
-                Description = "Image as-is"
-            };
             Option<String?> descriptionOption = new("--description", "-d") {
                 Description = "Description"
             };
@@ -355,27 +368,30 @@ internal static partial class Commands {
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
+            Option<bool> imageAsIsOption = new("--image-as-is") {
+                Description = "Force image being set as-is"
+            };
             Command setCommand = new("set", "Set Data from a Photo") {
                 inputArgument,
                 formatOption,
                 imageOption,
-                imageAsIsOption,
                 descriptionOption,
                 jsonOption,
                 titleOption,
                 updateJsonOption,
-                outputOption
+                outputOption,
+                imageAsIsOption
             };
             setCommand.SetAction(result => Environment.ExitCode = SetFunction(
                 result.GetRequiredValue(inputArgument),
                 result.GetValue(formatOption),
                 result.GetValue(imageOption),
-                result.GetValue(imageAsIsOption),
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
                 result.GetValue(updateJsonOption),
-                result.GetValue(outputOption)));
+                result.GetValue(outputOption),
+                result.GetValue(imageAsIsOption)));
             return setCommand;
         }
     }
