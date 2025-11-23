@@ -6,7 +6,7 @@ namespace RagePhoto.Cli;
 internal static partial class Commands {
 
     internal static Int32 CreateFunction(String format, String? imageFile, String? description,
-        String? json, String? title, String? outputFile, bool imageAsIs) {
+        String? json, String? title, String? outputFile, Boolean imageAsIs) {
         try {
             using Photo photo = new();
 
@@ -159,7 +159,7 @@ internal static partial class Commands {
     }
 
     internal static Int32 SetFunction(String inputFile, String? format, String? imageFile, String? description,
-        String? json, String? title, bool updateJson, String? outputFile, bool imageAsIs) {
+        String? json, String? title, Boolean updateJson, String? outputFile, Boolean imageAsIs) {
         try {
             if (format == null && imageFile == null && description == null
                 && json == null && title == null && !updateJson) {
@@ -273,7 +273,7 @@ internal static partial class Commands {
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
-            Option<bool> imageAsIsOption = new("--image-as-is") {
+            Option<Boolean> imageAsIsOption = new("--image-as-is") {
                 Description = "Force image being set as-is"
             };
             Command createCommand = new("create", "Create a new Photo") {
@@ -362,13 +362,13 @@ internal static partial class Commands {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Title"
             };
-            Option<bool> updateJsonOption = new("--update-json", "-u") {
+            Option<Boolean> updateJsonOption = new("--update-json", "-u") {
                 Description = "Update JSON"
             };
             Option<String?> outputOption = new("--output", "-o") {
                 Description = "Output File"
             };
-            Option<bool> imageAsIsOption = new("--image-as-is") {
+            Option<Boolean> imageAsIsOption = new("--image-as-is") {
                 Description = "Force image being set as-is"
             };
             Command setCommand = new("set", "Set Data from a Photo") {

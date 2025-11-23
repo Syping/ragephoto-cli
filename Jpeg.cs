@@ -29,7 +29,7 @@ internal class Jpeg {
         return jpegStream.ToArray();
     }
 
-    internal static Byte[] GetJpeg(Stream input, bool imageAsIs, out Size size) {
+    internal static Byte[] GetJpeg(Stream input, Boolean imageAsIs, out Size size) {
         try {
             if (imageAsIs) {
                 using MemoryStream jpegStream = new();

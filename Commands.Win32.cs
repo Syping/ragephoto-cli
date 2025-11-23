@@ -53,8 +53,8 @@ internal static partial class Commands {
                 Description = "Path Command"
             };
             commandArgument.CompletionSources.Add(_ => [
-                new ("register"),
-                new ("unregister")]);
+                new("register"),
+                new("unregister")]);
             commandArgument.Validators.Add(result => {
                 String[] commands = ["register", "unregister"];
                 String command = result.GetValueOrDefault<String>();
