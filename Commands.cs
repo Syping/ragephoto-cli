@@ -5,7 +5,7 @@ namespace RagePhoto.Cli;
 
 internal static partial class Commands {
 
-    internal static Int32 CreateFunction(String format, String? imageFile, String? description, String? json, String? title, String outputFile) {
+    internal static Int32 CreateFunction(String format, String? imageFile, String? description, String? json, String? title, String? outputFile) {
         try {
             using Photo photo = new();
 
@@ -38,14 +38,25 @@ internal static partial class Commands {
             photo.Description = description ?? String.Empty;
             photo.Title = title ?? "Custom Photo";
 
-            if (outputFile == "-" || outputFile == String.Empty) {
+            if (outputFile == "-") {
                 using Stream output = Console.OpenStandardOutput();
                 output.Write(photo.Save());
             }
             else {
                 String tempFile = Path.GetTempFileName();
                 photo.SaveFile(tempFile);
-                File.Move(tempFile, outputFile, true);
+                if (!String.IsNullOrEmpty(outputFile)) {
+                    File.Move(tempFile, outputFile, true);
+                }
+                else {
+                    outputFile = Path.Join(Environment.CurrentDirectory, $"{photo.Format switch {
+                        PhotoFormat.GTA5 => "PGTA5",
+                        PhotoFormat.RDR2 => "PRDR3",
+                        _ => String.Empty
+                    }}{uid}");
+                    File.Move(tempFile, outputFile, true);
+                    Console.WriteLine(outputFile);
+                }
             }
             return 0;
         }
@@ -241,9 +252,8 @@ internal static partial class Commands {
             Option<String?> titleOption = new("--title", "-t") {
                 Description = "Title"
             };
-            Option<String> outputOption = new("--output", "-o") {
-                Description = "Output File",
-                DefaultValueFactory = _ => "-"
+            Option<String?> outputOption = new("--output", "-o") {
+                Description = "Output File"
             };
             Command createCommand = new("create", "Create a new Photo") {
                 formatArgument, imageOption, descriptionOption, jsonOption, titleOption, outputOption
@@ -254,7 +264,7 @@ internal static partial class Commands {
                 result.GetValue(descriptionOption),
                 result.GetValue(jsonOption),
                 result.GetValue(titleOption),
-                result.GetRequiredValue(outputOption)));
+                result.GetValue(outputOption)));
             return createCommand;
         }
     }
