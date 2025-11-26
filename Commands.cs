@@ -50,11 +50,11 @@ internal static partial class Commands {
                     File.Move(tempFile, outputFile, true);
                 }
                 else {
-                    outputFile = $"{photo.Format switch {
-                        PhotoFormat.GTA5 => "PGTA5",
-                        PhotoFormat.RDR2 => "PRDR3",
-                        _ => String.Empty
-                    }}{uid}";
+                    outputFile = photo.Format switch {
+                        PhotoFormat.GTA5 => $"PGTA5{uid}",
+                        PhotoFormat.RDR2 => $"PRDR3{uid}_1",
+                        _ => $"{uid}"
+                    };
                     File.Move(tempFile, outputFile, true);
                     Console.WriteLine(outputFile);
                 }
