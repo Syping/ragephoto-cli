@@ -37,11 +37,15 @@ internal static partial class Commands {
                 environmentKey.SetValue("Path", String.Join(";", paths), RegistryValueKind.ExpandString);
                 return 0;
             }
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine("Invalid Path Command");
+            Console.ResetColor();
             return 1;
         }
         catch (Exception exception) {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(exception.Message);
+            Console.ResetColor();
             return -1;
         }
     }
