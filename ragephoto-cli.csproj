@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RagePhoto.Core" Version="0.8.1" />
+    <PackageReference Include="RagePhoto.Core" Version="0.8.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="System.CommandLine" Version="2.0.0" />
   </ItemGroup>
