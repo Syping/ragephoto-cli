@@ -4,7 +4,7 @@
 !define APP_EXECUTABLE "ragephoto-cli.exe"
 !define APP_NAME "ragephoto-cli"
 !define APP_GUID "{8AC8F2D8-DC6B-40BF-A0AF-CF939029B1ED}"
-!define APP_VERSION "1.0.0.0"
+!define APP_VERSION "0.1.0.0"
 !define INSTALLER_NAME "${APP_NAME}_setup.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
 !define REG_APP_PATH "Software\Microsoft\Windows\CurrentVersion\App Paths\${APP_EXECUTABLE}"
