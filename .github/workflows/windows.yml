@@ -3,7 +3,7 @@ on: push
 
 jobs:
   Build:
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
     - name: Cloning
       uses: actions/checkout@v5
