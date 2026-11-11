@@ -15,16 +15,17 @@ internal class Jpeg {
         using Image<Rgb24> image = new(size.Width, size.Height);
         image.ProcessPixelRows(static pixelAccessor => {
             for (Int32 y = 0; y < pixelAccessor.Height; y++) {
+                Rgb24 blackColor = new(0, 0, 0);
                 Span<Rgb24> pixelRow = pixelAccessor.GetRowSpan(y);
                 for (Int32 x = 0; x < pixelRow.Length; x++) {
-                    pixelRow[x] = Color.Black;
+                    pixelRow[x] = blackColor;
                 }
             }
         });
         using MemoryStream jpegStream = new();
         image.SaveAsJpeg(jpegStream, new() {
             Quality = 100,
-            ColorType = JpegEncodingColor.YCbCrRatio444
+            ColorType = JpegColorType.YCbCrRatio444
         });
         return jpegStream.ToArray();
     }
@@ -45,7 +46,7 @@ internal class Jpeg {
                 using MemoryStream jpegStream = new();
                 image.SaveAsJpeg(jpegStream, new() {
                     Quality = 100,
-                    ColorType = JpegEncodingColor.YCbCrRatio444
+                    ColorType = JpegColorType.YCbCrRatio444
                 });
                 return jpegStream.ToArray();
             }
